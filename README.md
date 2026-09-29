@@ -16,7 +16,38 @@ boilerplate), and converts it to Markdown with `markdownify`.
 - Falls back to the raw page HTML if content extraction fails.
 - Output uses ATX (`#`) headers; `script`, `style`, `noscript`, `svg` and `button` are stripped.
 
-## Install
+## Recommended: run in Docker (isolated)
+
+Dependencies, Chromium and every page it opens live inside a throwaway container:
+non-root user, no host mounts, no extra capabilities, memory/CPU capped, removed on exit.
+Nothing is installed on your system.
+
+```bash
+docker build -t browser-mcp .
+```
+
+```json
+{
+  "mcpServers": {
+    "browser": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "--cap-drop=ALL", "--security-opt=no-new-privileges",
+        "--memory=1g", "--cpus=1", "--pids-limit=256",
+        "--ipc=host",
+        "browser-mcp"
+      ]
+    }
+  }
+}
+```
+
+Notes: only `http(s)` URLs are accepted (no `file://`). The container can still reach your
+LAN/localhost services through Docker's network; add a restrictive `--network` or firewall
+rule if you need to block that.
+
+## Install without Docker
 
 Requires Python 3.10+.
 

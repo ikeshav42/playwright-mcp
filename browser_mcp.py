@@ -1,8 +1,10 @@
 """Standalone MCP server: fetch JavaScript-rendered webpages as clean Markdown."""
 
 from collections.abc import AsyncIterator
+import os
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 import trafilatura
 from markdownify import markdownify as to_markdown
@@ -32,8 +34,11 @@ async def lifespan(server: FastMCP) -> AsyncIterator[AppContext]:
             headless=True,
             args=[
                 "--disable-blink-features=AutomationControlled",
-                "--no-sandbox",
                 "--disable-dev-shm-usage",
+                # Chromium's own sandbox stays on by default. Inside the Docker
+                # image (non-root, no capabilities) it cannot start, so the
+                # container acts as the sandbox instead.
+                *(["--no-sandbox"] if os.environ.get("BROWSER_MCP_NO_SANDBOX") else []),
             ],
         )
         try:
@@ -56,6 +61,8 @@ mcp = FastMCP("browser-mcp", lifespan=lifespan)
 async def fetch_webpage_markdown(
     url: str, ctx: Context, wait_for_selector: str = ""
 ) -> str:
+    if urlparse(url).scheme not in ("http", "https"):
+        raise ValueError("Only http:// and https:// URLs are allowed.")
     browser = ctx.request_context.lifespan_context.browser
     context = await browser.new_context(
         user_agent=USER_AGENT,
