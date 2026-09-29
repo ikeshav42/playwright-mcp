@@ -1,5 +1,5 @@
 # Base image ships Chromium and its system libraries; tag must match the pinned playwright version.
-FROM mcr.microsoft.com/playwright/python:v1.49.0-noble
+FROM mcr.microsoft.com/playwright/python:v1.63.0-noble
 
 WORKDIR /app
 COPY requirements.txt .

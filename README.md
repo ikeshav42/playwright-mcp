@@ -49,8 +49,7 @@ rule if you need to block that.
 
 ## Install without Docker
 
-Requires Python 3.10-3.13 (the pinned `playwright==1.49.0` needs `greenlet==3.1.1`, which has
-no wheel for Python 3.14). Use a virtual environment:
+Requires Python 3.10+. Use a virtual environment:
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
