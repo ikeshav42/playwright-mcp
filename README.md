@@ -49,12 +49,18 @@ rule if you need to block that.
 
 ## Install without Docker
 
-Requires Python 3.10+.
+Requires Python 3.10-3.13 (the pinned `playwright==1.49.0` needs `greenlet==3.1.1`, which has
+no wheel for Python 3.14). Use a virtual environment:
 
 ```bash
-pip install mcp playwright trafilatura markdownify
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 playwright install chromium
 ```
+
+On Linux, Chromium may also need system libraries: `sudo playwright install-deps chromium`.
+Outside Docker, Chromium's own sandbox is enabled; set `BROWSER_MCP_NO_SANDBOX=1` only if it
+cannot start (for example as root or in a container).
 
 ## Register with an MCP client
 
@@ -85,7 +91,7 @@ For pages that render content client-side, pass a selector to wait for:
 ```json
 {
   "url": "https://news.ycombinator.com/",
-  "wait_for_selector": "table.itemlist"
+  "wait_for_selector": "tr.athing"
 }
 ```
 

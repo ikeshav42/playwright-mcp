@@ -29,16 +29,18 @@ class AppContext:
 @asynccontextmanager
 async def lifespan(server: FastMCP) -> AsyncIterator[AppContext]:
     """Launch one warm Chromium instance shared by all tool calls."""
+    # Chromium's own sandbox stays on by default. Inside the Docker image
+    # (non-root, no capabilities) it cannot start, so the container acts as the
+    # sandbox instead. Playwright disables the sandbox unless told otherwise,
+    # so it must be requested explicitly.
+    use_sandbox = not os.environ.get("BROWSER_MCP_NO_SANDBOX")
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(
             headless=True,
+            chromium_sandbox=use_sandbox,
             args=[
                 "--disable-blink-features=AutomationControlled",
                 "--disable-dev-shm-usage",
-                # Chromium's own sandbox stays on by default. Inside the Docker
-                # image (non-root, no capabilities) it cannot start, so the
-                # container acts as the sandbox instead.
-                *(["--no-sandbox"] if os.environ.get("BROWSER_MCP_NO_SANDBOX") else []),
             ],
         )
         try:
